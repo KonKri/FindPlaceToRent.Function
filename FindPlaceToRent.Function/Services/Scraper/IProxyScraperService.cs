@@ -9,7 +9,7 @@ namespace FindPlaceToRent.Function.Services
         /// Using a proxy, page under given url is being scrapped without blocking us.
         /// </summary>
         /// <param name="url"></param>
-        /// <returns></returns>
-        Task<HtmlDocument> GetHtmlContent(string url);
+        /// <returns>Returns an HtmlDocument object.</returns>
+        Task<HtmlDocument> GetHtmlContentAsync(string url);
     }
 }

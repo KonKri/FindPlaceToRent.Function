@@ -15,7 +15,7 @@ namespace FindPlaceToRent.Function.Services
             _httpClient.BaseAddress = new Uri($"http://api.scrapestack.com/scrape?access_key={accessKey}&url=");
         }
 
-        public async Task<HtmlDocument> GetHtmlContent(string url)
+        public async Task<HtmlDocument> GetHtmlContentAsync(string url)
         {
             // get page content.
             var pageAsStr = await _httpClient.GetStringAsync(url);

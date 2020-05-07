@@ -1,6 +1,6 @@
 ﻿using FindPlaceToRent.Function;
 using FindPlaceToRent.Function.Services.Crawlers;
-using FindPlaceToRent.Function.Services.Scraper;
+using FindPlaceToRent.Function.Services;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http;
@@ -19,7 +19,8 @@ namespace FindPlaceToRent.Function
         {
             builder.Services.AddHttpClient();
             builder.Services.AddScoped<IAdsCrawler, AdsCrawler>();
-            builder.Services.AddSingleton(o => new ProxyScraperService(o.GetRequiredService<HttpClient>(), "7f3bb9113f45580e893e376ea502b82e"));
+            //builder.Services.AddSingleton(o => new ProxyScraperService(o.GetService<HttpClient>(), "7f3bb9113f45580e893e376ea502b82e"));
+            //builder.Services.AddSingleton(o => new ProxyScraperService(new HttpClient(), "7f3bb9113f45580e893e376ea502b82e"));
         }
     }
 }
