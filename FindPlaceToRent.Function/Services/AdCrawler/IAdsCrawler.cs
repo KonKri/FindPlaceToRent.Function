@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using FindPlaceToRent.Function.Models;
+using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Function.Services.Crawlers
 {
@@ -11,13 +12,13 @@ namespace FindPlaceToRent.Function.Services.Crawlers
         /// Get all ads' info summarized from first page.
         /// </summary>
         /// <returns></returns>
-        Task GetAdsSummarized();
+        Task GetAdsSummarizedAsync(string adsUrl);
 
         /// <summary>
         /// Get details for specific ad we are intrested in.
         /// </summary>
         /// <param name="adUrl"></param>
         /// <returns></returns>
-        Task GetAdDetails(string adUrl);
+        Task<Ad> GetAdDetailsAsync(string adUrl);
     }
 }
