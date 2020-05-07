@@ -19,8 +19,7 @@ namespace FindPlaceToRent.Function
         {
             builder.Services.AddHttpClient();
             builder.Services.AddScoped<IAdsCrawler, AdsCrawler>();
-            //builder.Services.AddSingleton(o => new ProxyScraperService(o.GetService<HttpClient>(), "7f3bb9113f45580e893e376ea502b82e"));
-            //builder.Services.AddSingleton(o => new ProxyScraperService(new HttpClient(), "7f3bb9113f45580e893e376ea502b82e"));
+            builder.Services.AddSingleton<IProxyScraperService>(o => new ProxyScraperService(o.GetService<HttpClient>(), "7f3bb9113f45580e893e376ea502b82e"));
         }
     }
 }

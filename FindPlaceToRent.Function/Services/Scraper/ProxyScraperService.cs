@@ -8,17 +8,18 @@ namespace FindPlaceToRent.Function.Services
     public class ProxyScraperService : IProxyScraperService
     {
         private readonly HttpClient _httpClient;
+        private readonly string AccessKey;
 
         public ProxyScraperService(HttpClient httpClient, string accessKey)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri($"http://api.scrapestack.com/scrape?access_key={accessKey}&url=");
+            AccessKey = accessKey;
         }
-
+        
         public async Task<HtmlDocument> GetHtmlContentAsync(string url)
         {
             // get page content.
-            var pageAsStr = await _httpClient.GetStringAsync(url);
+            var pageAsStr = await _httpClient.GetStringAsync($"http://api.scrapestack.com/scrape?access_key={AccessKey}&url={url}");
 
             // create an html document object to get the data we need.
             var pageAsHtml = new HtmlDocument();

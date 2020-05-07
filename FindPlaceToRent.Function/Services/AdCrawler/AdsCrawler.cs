@@ -1,10 +1,7 @@
 ﻿using FindPlaceToRent.Function.Models;
 using HtmlAgilityPack;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Function.Services.Crawlers
@@ -20,14 +17,14 @@ namespace FindPlaceToRent.Function.Services.Crawlers
 
         public async Task<Ad> GetAdDetailsAsync(string adUrl)
         {
-            var adPage = /*await _scraper.GetHtmlContentAsync(adUrl);*/ new HtmlDocument();
+            var adPage = await _scraper.GetHtmlContentAsync(adUrl);
 
             return new Ad();
         }
 
         public async Task GetAdsSummarizedAsync(string adsUrl)
         {
-            var adsPage = /*await _scraper.GetHtmlContentAsync(adsUrl); */ new HtmlDocument();
+            var adsPage = await _scraper.GetHtmlContentAsync(adsUrl);
 
             // using xpath syntax, to get all div.article in page.
             var articles = adsPage.DocumentNode.SelectNodes("//div[@class='resultItems']/article").ToList();
@@ -37,7 +34,7 @@ namespace FindPlaceToRent.Function.Services.Crawlers
             {
                 var adRelativeUrl = article.GetAttributeValue("href", string.Empty);
                 var ad = await GetAdDetailsAsync(adRelativeUrl);
-                adsList.Add(ad);               
+                adsList.Add(ad);
             }
         }
     }

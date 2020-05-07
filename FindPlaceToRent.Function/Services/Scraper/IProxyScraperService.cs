@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
+using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Function.Services
 {
