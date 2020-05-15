@@ -28,8 +28,8 @@ namespace FindPlaceToRent.Function.Services
             // get page content.
             do
             {
-                //pageAsStr = await _httpClient.GetStringAsync($"http://api.scraperapi.com?api_key={AccessKey}&url={urlUrlEncoded}");
-                pageAsStr = File.ReadAllText("./wwwroot/index.html");
+                pageAsStr = await _httpClient.GetStringAsync($"http://api.scraperapi.com?api_key={AccessKey}&url={urlUrlEncoded}");
+                //pageAsStr = File.ReadAllText("./wwwroot/index.html");
 
                 // mimic human behavior.
                 if (counter >= 1)
@@ -38,7 +38,7 @@ namespace FindPlaceToRent.Function.Services
                 counter++;
 
                 // don't stress page.
-                if (counter >= 5)
+                if (counter >= 2)
                     throw new OperationCanceledException("couldn't get page content.");
 
             } while (pageAsStr.Contains("Pardon Our Interruption"));

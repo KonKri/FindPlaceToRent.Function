@@ -1,4 +1,5 @@
 ﻿using Microsoft.WindowsAzure.Storage.Table;
+using System;
 
 namespace FindPlaceToRent.Function.Models.Ad
 {
@@ -11,5 +12,11 @@ namespace FindPlaceToRent.Function.Models.Ad
         public string Characteristics { get; set; }
         public string Location { get; set; }
         public string Url { get; set; }
+
+        public void AssignParitionAndRowKey()
+        {
+            this.PartitionKey = "ad";
+            this.RowKey = Guid.NewGuid().ToString();
+        }
     }
 }

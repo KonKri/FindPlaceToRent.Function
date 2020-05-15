@@ -29,7 +29,7 @@ namespace FindPlaceToRent.Function.Services.Notifier
             {
                 var ad = htmlBodySectionTemplate;
                 
-                ad = ad.Replace("{{url}}", $"{_realEstateWebSiteAdsListSettings.AdPageBaseUrl}/e.Url")
+                ad = ad.Replace("{{url}}", $"{_realEstateWebSiteAdsListSettings.AdPageBaseUrl}/{e.Url}")
                        .Replace("{{titleAreaPrice}}", e.TitleAreaPrice)
                        .Replace("{{location}}", e.Location)
                        .Replace("{{characteristics}}", e.Characteristics);

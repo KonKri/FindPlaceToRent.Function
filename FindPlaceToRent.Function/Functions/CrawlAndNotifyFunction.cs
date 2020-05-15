@@ -30,7 +30,7 @@ namespace FindPlaceToRent.Function.Functions
 
         [FunctionName("CrawlAndNotify")]
         public async Task RunAsync(
-            [TimerTrigger("*/5 * * * * *")] TimerInfo myTimer,
+            [TimerTrigger("* */30 * * * *")] TimerInfo myTimer,
             [Table("AdUrls", Connection = "AzureWebJobsStorage")] CloudTable adsTable,
             ILogger log)
         {
@@ -46,12 +46,12 @@ namespace FindPlaceToRent.Function.Functions
 
             // get saved ads from storage.
             var condition = TableQuery.GenerateFilterConditionForDate(
-                                                            "timestamp",
-                                                            QueryComparisons.Equal,
-                                                            DateTime.UtcNow.AddMinutes(-5)
+                                                            "Timestamp",
+                                                            QueryComparisons.GreaterThan,
+                                                            DateTimeOffset.UtcNow.AddMinutes(-15)
                                                             );
 
-            var selectQuery = new TableQuery<CrawledAdSummary>().Where(condition);
+            var selectQuery = new TableQuery<CrawledAdSummary>()/*.Where(condition)*/;
 
             var savedAds = await adsTable.ExecuteQuerySegmentedAsync(selectQuery, null);
 
@@ -59,19 +59,22 @@ namespace FindPlaceToRent.Function.Functions
             // find unseen ones.
             var newAds = crawledAds.Where(w => !savedAds.Any(a => a.Url == w.Url)).ToList();
 
-
-            // notify for new ads.
-            await _notifier.SendNotificationForNewAdsAsync(newAds);
-
-            // save new ads in storage.
-            var insertBatchOperation = new TableBatchOperation();
-
-            newAds.ForEach(a =>
+            if (newAds.Count != 0)
             {
-                insertBatchOperation.Add(TableOperation.InsertOrReplace(a));
-            });
+                // notify for new ads.
+                await _notifier.SendNotificationForNewAdsAsync(newAds);
 
-            await adsTable.ExecuteBatchAsync(insertBatchOperation);
+                // save new ads in storage.
+                var insertBatchOperation = new TableBatchOperation();
+
+                newAds.ForEach(a =>
+                {
+                    a.AssignParitionAndRowKey();
+                    insertBatchOperation.Add(TableOperation.InsertOrReplace(a));
+                });
+
+                await adsTable.ExecuteBatchAsync(insertBatchOperation);
+            }
 
             log.LogInformation($"Crawl ended at: {DateTime.Now}");
         }
