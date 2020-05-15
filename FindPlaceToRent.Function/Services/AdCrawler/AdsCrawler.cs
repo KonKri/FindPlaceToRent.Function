@@ -1,41 +1,45 @@
-﻿using FindPlaceToRent.Function.Models;
+﻿using FindPlaceToRent.Function.Models.Ad;
 using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Function.Services.Crawlers
 {
     public class AdsCrawler : IAdsCrawler
     {
-        private readonly IProxyScraperService _scraper;
+        private readonly IProxyScraper _scraper;
 
-        public AdsCrawler(IProxyScraperService scraper)
+        public AdsCrawler(IProxyScraper scraper)
         {
             _scraper = scraper;
         }
 
-        public async Task<Ad> GetAdDetailsAsync(string adUrl)
+        public List<CrawledAdSummary> GetAdsSummaries(HtmlDocument htmlDocument)
         {
-            var adPage = await _scraper.GetHtmlContentAsync(adUrl);
-
-            return new Ad();
-        }
-
-        public async Task GetAdsSummarizedAsync(string adsUrl)
-        {
-            var adsPage = await _scraper.GetHtmlContentAsync(adsUrl);
-
             // using xpath syntax, to get all div.article in page.
-            var articles = adsPage.DocumentNode.SelectNodes("//div[@class='resultItems']/article").ToList();
-
-            var adsList = new List<Ad>();
-            foreach (var article in articles)
+            return htmlDocument.DocumentNode.SelectNodes("//div[@class='resultItems']/article")
+            .Select(s =>
             {
-                var adRelativeUrl = article.GetAttributeValue("href", string.Empty);
-                var ad = await GetAdDetailsAsync(adRelativeUrl);
-                adsList.Add(ad);
-            }
+                return new CrawledAdSummary
+                {
+                    TitleAreaPrice = s.SelectSingleNode("./div[@class='articleInfo']/h1")?.InnerText
+                                      .Replace(Environment.NewLine, String.Empty)
+                                      .Replace("&euro;", "€")
+                                      .Replace("  ", String.Empty)
+                                      .Trim(),
+                    
+                    Characteristics = s.SelectSingleNode("./div[@class='articleInfo']/div[@class='characteristics']")?.InnerText
+                                      .Replace(Environment.NewLine, String.Empty)
+                                      .Replace("&euro;", "€")
+                                      .Replace("  ", String.Empty)
+                                      .Trim(),
+
+                    Location = s.GetAttributeValue<string>("data-area", string.Empty),
+                    Url = s.GetAttributeValue<string>("href", string.Empty)
+                };
+            })
+            .ToList();
         }
     }
 }

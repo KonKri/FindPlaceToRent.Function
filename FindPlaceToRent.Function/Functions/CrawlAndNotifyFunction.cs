@@ -1,35 +1,82 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+using FindPlaceToRent.Function.Models.Ad;
+using FindPlaceToRent.Function.Services;
 using FindPlaceToRent.Function.Services.Crawlers;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
+using Microsoft.WindowsAzure.Storage.Table;
+using FindPlaceToRent.Function.Services.Notifier;
+using Microsoft.Extensions.Options;
+using FindPlaceToRent.Function.Models.Configuration;
 
 namespace FindPlaceToRent.Function.Functions
 {
     public class CrawlAndNotifyFunction
     {
+        private readonly RealEstateWebSiteAdsListSettings _realEstateWebSiteAdsListSettings;
         private readonly IAdsCrawler _crawler;
+        private readonly IProxyScraper _scraper;
+        private readonly INotifier _notifier;
 
-        public CrawlAndNotifyFunction(IAdsCrawler crawler)
+        public CrawlAndNotifyFunction(IAdsCrawler crawler, IProxyScraper scraper, INotifier notifier, IOptions<RealEstateWebSiteAdsListSettings> realEstateWebSiteAdsListSettingsOption)
         {
             _crawler = crawler;
+            _scraper = scraper;
+            _notifier = notifier;
+            _realEstateWebSiteAdsListSettings = realEstateWebSiteAdsListSettingsOption.Value;
         }
 
         [FunctionName("CrawlAndNotify")]
-        public async Task RunAsync([TimerTrigger("*/5 * * * * *")] TimerInfo myTimer, ILogger log)
+        public async Task RunAsync(
+            [TimerTrigger("* */30 * * * *")] TimerInfo myTimer,
+            [Table("AdUrls", Connection = "AzureWebJobsStorage")] CloudTable adsTable,
+            ILogger log)
         {
-            log.LogInformation($"Crawl started ad at: {DateTime.Now}");
+            log.LogInformation($"Crawl started at: {DateTime.Now}");
 
-            // crawl xe for all ads in page.
-            await _crawler.GetAdsSummarizedAsync("https://www.xe.gr/property/search?Geo.area_id_new__hierarchy=82196&Item.area.from=20&Publication.age=1&Publication.level_num.from=1&System.item_type=re_residence&Transaction.price.to=350&Transaction.type_channel=117541&sort_by=System.creation_date&sort_direction=desc");
+            // websrape Ads List page.
+            var adsSummarizedPage = await _scraper.GetHtmlContentAsync(_realEstateWebSiteAdsListSettings.AdsListPageUrl);
+
+
+            // get all links for ads from adsListPage
+            var crawledAds = _crawler.GetAdsSummaries(adsSummarizedPage);
+
 
             // get saved ads from storage.
+            var condition = TableQuery.GenerateFilterConditionForDate(
+                                                            "Timestamp",
+                                                            QueryComparisons.GreaterThan,
+                                                            DateTimeOffset.UtcNow.AddMinutes(-15)
+                                                            );
+
+            var selectQuery = new TableQuery<CrawledAdSummary>()/*.Where(condition)*/;
+
+            var savedAds = await adsTable.ExecuteQuerySegmentedAsync(selectQuery, null);
+
 
             // find unseen ones.
+            var newAds = crawledAds.Where(w => !savedAds.Any(a => a.Url == w.Url)).ToList();
 
-            // notify for new ads.
+            if (newAds.Count != 0)
+            {
+                // notify for new ads.
+                await _notifier.SendNotificationForNewAdsAsync(newAds);
 
-            // save new ads in storage.
+                // save new ads in storage.
+                var insertBatchOperation = new TableBatchOperation();
+
+                newAds.ForEach(a =>
+                {
+                    a.AssignParitionAndRowKey();
+                    insertBatchOperation.Add(TableOperation.InsertOrReplace(a));
+                });
+
+                await adsTable.ExecuteBatchAsync(insertBatchOperation);
+            }
+
+            log.LogInformation($"Crawl ended at: {DateTime.Now}");
         }
     }
 }

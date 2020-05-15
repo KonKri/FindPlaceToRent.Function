@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Function.Services
 {
     public interface IEmailService
     {
-        // todo: add overload.
-        Task SendEmailAsync();
+        Task SendEmailAsync(string subject, string body, bool isBodyHtml = true);
     }
 }
