@@ -1,24 +1,20 @@
 ﻿using FindPlaceToRent.Function.Models;
+using FindPlaceToRent.Function.Models.Ad;
+using HtmlAgilityPack;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Function.Services.Crawlers
 {
     /// <summary>
-    /// Gets html content of requested page.
+    /// Gets content from requested page's html.
     /// </summary>
     public interface IAdsCrawler
     {
         /// <summary>
-        /// Get all ads' info summarized from first page.
+        /// Get all ads' urls from ads list page.
         /// </summary>
         /// <returns></returns>
-        Task GetAdsSummarizedAsync(string adsUrl);
-
-        /// <summary>
-        /// Get details for specific ad we are intrested in.
-        /// </summary>
-        /// <param name="adUrl"></param>
-        /// <returns></returns>
-        Task<Ad> GetAdDetailsAsync(string adUrl);
+        List<CrawledAdSummary> GetAdsSummaries(HtmlDocument htmlDocument);
     }
 }
