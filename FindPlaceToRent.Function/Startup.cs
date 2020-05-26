@@ -8,7 +8,7 @@ using System.Net.Mail;
 using Microsoft.Extensions.Configuration;
 using FindPlaceToRent.Function.Models.Configuration;
 using FindPlaceToRent.Function.Services.Notifier;
-using System.IO;
+using System;
 
 // so that azure functions can find startup file.
 [assembly: FunctionsStartup(typeof(Startup))]
@@ -25,7 +25,7 @@ namespace FindPlaceToRent.Function
         public Startup()
         {
             _config = new ConfigurationBuilder()
-                                    .SetBasePath(Directory.GetCurrentDirectory())
+                                    .SetBasePath(Environment.CurrentDirectory)
                                     .AddJsonFile("./secrets.settings.json")
                                     .Build();
         }

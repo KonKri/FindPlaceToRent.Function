@@ -1,41 +1,39 @@
+﻿using FindPlaceToRent.Core.Models.Ad;
+using FindPlaceToRent.Core.Models.Configuration;
+using FindPlaceToRent.Core.Services;
+using FindPlaceToRent.Core.Services.Crawlers;
+using FindPlaceToRent.Core.Services.Notifier;
+using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using FindPlaceToRent.Function.Models.Ad;
-using FindPlaceToRent.Function.Services;
-using FindPlaceToRent.Function.Services.Crawlers;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Table;
-using FindPlaceToRent.Function.Services.Notifier;
-using Microsoft.Extensions.Options;
-using FindPlaceToRent.Function.Models.Configuration;
 
-namespace FindPlaceToRent.Function.Functions
+namespace FindPlaceToRent.Core
 {
-    public class CrawlAndNotifyFunction
+    public class SearcherAndNotifier
     {
         private readonly RealEstateWebSiteAdsListSettings _realEstateWebSiteAdsListSettings;
         private readonly IAdsCrawler _crawler;
         private readonly IProxyScraper _scraper;
         private readonly INotifier _notifier;
+        private readonly CloudTable _adsTable;
 
-        public CrawlAndNotifyFunction(IAdsCrawler crawler, IProxyScraper scraper, INotifier notifier, IOptions<RealEstateWebSiteAdsListSettings> realEstateWebSiteAdsListSettingsOption)
+
+        internal SearcherAndNotifier(RealEstateWebSiteAdsListSettings realEstateWebSiteAdsListSettings, IAdsCrawler crawler, IProxyScraper scraper, Notifier notifier, CloudTable adsTable)
         {
+            _realEstateWebSiteAdsListSettings = realEstateWebSiteAdsListSettings;
             _crawler = crawler;
             _scraper = scraper;
             _notifier = notifier;
-            _realEstateWebSiteAdsListSettings = realEstateWebSiteAdsListSettingsOption.Value;
+            _adsTable = adsTable;
         }
 
-        [FunctionName("CrawlAndNotify")]
-        public async Task RunAsync(
-            [TimerTrigger("*/10 * * * * *")] TimerInfo myTimer,
-            [Table("AdUrls", Connection = "AzureWebJobsStorage")] CloudTable adsTable,
-            ILogger log)
+        /// <summary>
+        /// Searches for new posted ads and sends email to notify users.
+        /// </summary>
+        /// <returns></returns>
+        public async Task NotifyAsync()
         {
-            log.LogInformation($"Crawl started at: {DateTime.Now}");
-
             // websrape Ads List page.
             var adsSummarizedPage = await _scraper.GetHtmlContentAsync(_realEstateWebSiteAdsListSettings.AdsListPageUrl);
 
@@ -53,7 +51,7 @@ namespace FindPlaceToRent.Function.Functions
 
             var selectQuery = new TableQuery<CrawledAdSummary>()/*.Where(condition)*/;
 
-            var savedAds = await adsTable.ExecuteQuerySegmentedAsync(selectQuery, null);
+            var savedAds = await _adsTable.ExecuteQuerySegmentedAsync(selectQuery, null);
 
 
             // find unseen ones.
@@ -73,10 +71,8 @@ namespace FindPlaceToRent.Function.Functions
                     insertBatchOperation.Add(TableOperation.InsertOrReplace(a));
                 });
 
-                await adsTable.ExecuteBatchAsync(insertBatchOperation);
+                await _adsTable.ExecuteBatchAsync(insertBatchOperation);
             }
-
-            log.LogInformation($"Crawl ended at: {DateTime.Now}");
         }
     }
 }

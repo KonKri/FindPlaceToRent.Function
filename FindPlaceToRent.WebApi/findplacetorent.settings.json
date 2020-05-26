@@ -1,0 +1,24 @@
+{
+  "RealEstateWebSiteAdsListSettings": {
+    "AdsListPageUrl": "https://www.xe.gr/property/search?Geo.area_id_new__hierarchy=82196&Item.area.from=20&Publication.age=1&Publication.level_num.from=1&System.item_type=re_residence&Transaction.price.to=350&Transaction.type_channel=117541&sort_by=System.creation_date&sort_direction=desc",
+    "AdPageBaseUrl": "https://www.xe.gr"
+  },
+
+  "ScrapeStackApiKey": "7f3bb9113f45580e893e376ea502b82e",
+  "ScraperApiApiKey": "4fe00b606ebe47dd2d5c02543a631520",
+
+  "AzureStorageSettings": {
+    "AzureTableStorageConnectionString": "DefaultEndpointsProtocol=https;AccountName=findplacetorentstorage;AccountKey=OvGPmgt3ss/zc/cVVKSeNpJBNjQXwIpbNHXZ1U14wqHcUAnixVBuFf3KcDp+Ml0/tmJVKas+YcKr1aBp0SupbA==;EndpointSuffix=core.windows.net",
+    "TableName": "Ads"
+  },
+
+  "SmtpSettings": {
+    "Server": "smtp.office365.com",
+    "Port": 587,
+    "EnableSsl": true,
+    "From": "dont.reply.pls@outlook.com.gr",
+    "Username": "dont.reply.pls@outlook.com.gr",
+    "Password": "77java&&",
+    "Recipients": [ "kon.kri@outlook.com" ]
+  }
+}
