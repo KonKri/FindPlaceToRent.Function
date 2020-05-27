@@ -13,7 +13,6 @@ namespace FindPlaceToRent.WebApi.Controllers
             _notifier = notifier;
         }
 
-
         /// <summary>
         /// Searches for new ads. If new ads are posted, they are stored in azure table storage, and an email container info about new ads is sent to the reciepients.
         /// </summary>

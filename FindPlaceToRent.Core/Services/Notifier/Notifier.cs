@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Core.Services.Notifier
 {
-    internal class Notifier : INotifier
+    public class Notifier : INotifier
     {
         private readonly IEmailService _emailService;
         private readonly RealEstateWebSiteAdsListSettings _realEstateWebSiteAdsListSettings;

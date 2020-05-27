@@ -6,7 +6,7 @@ namespace FindPlaceToRent.Core.Models.Ad
     /// <summary>
     /// Represents the url crawled from the web page and stored in table storage.
     /// </summary>
-    internal class CrawledAdSummary : TableEntity
+    public class CrawledAdSummary : TableEntity
     {
         public string TitleAreaPrice { get; set; }
         public string Characteristics { get; set; }

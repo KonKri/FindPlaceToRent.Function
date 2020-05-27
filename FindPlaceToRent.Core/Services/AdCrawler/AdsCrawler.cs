@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace FindPlaceToRent.Core.Services.Crawlers
 {
-    internal class AdsCrawler : IAdsCrawler
+    public class AdsCrawler : IAdsCrawler
     {
         private readonly IProxyScraper _scraper;
 

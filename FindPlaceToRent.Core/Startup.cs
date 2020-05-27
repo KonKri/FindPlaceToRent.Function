@@ -7,7 +7,6 @@ using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Net;
-using System.Net.Http;
 using System.Net.Mail;
 
 namespace FindPlaceToRent.Core
@@ -20,11 +19,13 @@ namespace FindPlaceToRent.Core
             var moduleOptions = new ModuleConfiguration();
             moduleOptionsBuilder(moduleOptions);
 
-            services.AddHttpClient();
+            services.AddSingleton(moduleOptions.RealEstateWebSiteAdsListSettings);
+            services.AddSingleton(new ProxyScraperSettings { AccessKey = moduleOptions.ScraperApiApiKey});
+
+            services.AddHttpClient<IProxyScraper, ProxyScraper>();
             services.AddScoped<IAdsCrawler, AdsCrawler>();
-            services.AddSingleton<IProxyScraper>(o => new ProxyScraper(o.GetService<HttpClient>(), moduleOptions.ScraperApiApiKey));
             services.AddScoped<INotifier, Notifier>();
-            services.AddSingleton<CloudTable>(o =>
+            services.AddScoped<CloudTable>(o =>
             {
                 var storageAccount = CloudStorageAccount.Parse(moduleOptions.AzureStorageSettings.AzureTableStorageConnectionString);
                 var tableClient = storageAccount.CreateCloudTableClient();
@@ -45,6 +46,8 @@ namespace FindPlaceToRent.Core
 
                 return new EmailService(client, moduleOptions.SmtpSettings.From, moduleOptions.SmtpSettings.Recipients);
             });
+
+            services.AddScoped<SearcherAndNotifier>();
 
             return services;
         }

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Core.Services
 {
-    internal class EmailService : IEmailService
+    public class EmailService : IEmailService
     {
         private readonly SmtpClient _client;
         private readonly string _from;

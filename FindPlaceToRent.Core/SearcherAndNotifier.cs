@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Core
 {
-    public class SearcherAndNotifier
+    public class SearcherAndNotifier : ISearcherAndNotifier
     {
         private readonly RealEstateWebSiteAdsListSettings _realEstateWebSiteAdsListSettings;
         private readonly IAdsCrawler _crawler;
@@ -19,7 +19,7 @@ namespace FindPlaceToRent.Core
         private readonly CloudTable _adsTable;
 
 
-        internal SearcherAndNotifier(RealEstateWebSiteAdsListSettings realEstateWebSiteAdsListSettings, IAdsCrawler crawler, IProxyScraper scraper, Notifier notifier, CloudTable adsTable)
+        public SearcherAndNotifier(RealEstateWebSiteAdsListSettings realEstateWebSiteAdsListSettings, IAdsCrawler crawler, IProxyScraper scraper, INotifier notifier, CloudTable adsTable)
         {
             _realEstateWebSiteAdsListSettings = realEstateWebSiteAdsListSettings;
             _crawler = crawler;

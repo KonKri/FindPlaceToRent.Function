@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Core.Services
 {
-    internal interface IProxyScraper
+    public interface IProxyScraper
     {
         /// <summary>
         /// Using a proxy, page under given url is being scrapped without blocking us.

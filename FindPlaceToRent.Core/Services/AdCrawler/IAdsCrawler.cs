@@ -7,7 +7,7 @@ namespace FindPlaceToRent.Core.Services.Crawlers
     /// <summary>
     /// Gets content from requested page's html.
     /// </summary>
-    internal interface IAdsCrawler
+    public interface IAdsCrawler
     {
         /// <summary>
         /// Get all ads' urls from ads list page.

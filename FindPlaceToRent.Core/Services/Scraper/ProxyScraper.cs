@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using FindPlaceToRent.Core.Models.Configuration;
+using HtmlAgilityPack;
 using System;
 using System.Net.Http;
 using System.Threading;
@@ -7,15 +8,15 @@ using System.Web;
 
 namespace FindPlaceToRent.Core.Services
 {
-    internal class ProxyScraper : IProxyScraper
+    public class ProxyScraper : IProxyScraper
     {
         private readonly HttpClient _httpClient;
-        private readonly string AccessKey;
+        private readonly ProxyScraperSettings _settings;
 
-        public ProxyScraper(HttpClient httpClient, string accessKey)
+        public ProxyScraper(HttpClient httpClient, ProxyScraperSettings settings)
         {
             _httpClient = httpClient;
-            AccessKey = accessKey;
+            _settings = settings;
         }
 
         public async Task<HtmlDocument> GetHtmlContentAsync(string url)
@@ -27,7 +28,7 @@ namespace FindPlaceToRent.Core.Services
             // get page content.
             do
             {
-                pageAsStr = await _httpClient.GetStringAsync($"http://api.scraperapi.com?api_key={AccessKey}&url={urlUrlEncoded}");
+                pageAsStr = await _httpClient.GetStringAsync($"http://api.scraperapi.com?api_key={_settings.AccessKey}&url={urlUrlEncoded}");
                 //pageAsStr = File.ReadAllText("./wwwroot/index.html");
 
                 // mimic human behavior.

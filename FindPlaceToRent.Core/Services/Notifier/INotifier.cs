@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Core.Services.Notifier
 {
-    internal interface INotifier
+    public interface INotifier
     {
         /// <summary>
         /// Sends notification email if there are new ads in the webpage.
