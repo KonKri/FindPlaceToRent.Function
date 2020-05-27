@@ -1,6 +1,7 @@
 ﻿using FindPlaceToRent.Core.Models.Ad;
 using FindPlaceToRent.Core.Models.Configuration;
 using Microsoft.Extensions.Options;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -32,7 +33,7 @@ namespace FindPlaceToRent.Core.Services.Notifier
             {
                 var ad = htmlBodySectionTemplate;
                 
-                ad = ad.Replace("{{url}}", $"{_realEstateWebSiteAdsListSettings.AdPageBaseUrl}/{e.Url}")
+                ad = ad.Replace("{{url}}", GetAbsoluteAdUrl(_realEstateWebSiteAdsListSettings.AdPageBaseUrl, e.Url))
                        .Replace("{{titleAreaPrice}}", e.TitleAreaPrice)
                        .Replace("{{location}}", e.Location)
                        .Replace("{{characteristics}}", e.Characteristics);
@@ -41,6 +42,19 @@ namespace FindPlaceToRent.Core.Services.Notifier
             });
 
             await _emailService.SendEmailAsync(subject: "Νέα Αγγελία", body: htmlBody);
+        }
+
+        /// <summary>
+        /// Combines base url and relative ad url to produce an absolute url formed correctly.
+        /// </summary>
+        /// <param name="baseUri"></param>
+        /// <param name="relativeAdUrl"></param>
+        /// <returns></returns>
+        private string GetAbsoluteAdUrl(string baseUrl, string relativeAdUrl)
+        {
+            var baseUri = new Uri(baseUrl);
+            var absoluteAdUri = new Uri(baseUri, relativeAdUrl);
+            return absoluteAdUri.ToString();
         }
     }
 }
