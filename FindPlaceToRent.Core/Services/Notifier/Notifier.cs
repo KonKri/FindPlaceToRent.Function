@@ -3,6 +3,7 @@ using FindPlaceToRent.Core.Models.Configuration;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Core.Services.Notifier
@@ -12,16 +13,18 @@ namespace FindPlaceToRent.Core.Services.Notifier
         private readonly IEmailService _emailService;
         private readonly RealEstateWebSiteAdsListSettings _realEstateWebSiteAdsListSettings;
 
-        public Notifier(IEmailService emailService, IOptions<RealEstateWebSiteAdsListSettings> realEstateWebSiteAdsListOptions)
+        public Notifier(IEmailService emailService, RealEstateWebSiteAdsListSettings realEstateWebSiteAdsListOptions)
         {
             _emailService = emailService;
-            _realEstateWebSiteAdsListSettings = realEstateWebSiteAdsListOptions.Value;
+            _realEstateWebSiteAdsListSettings = realEstateWebSiteAdsListOptions;
         }
 
         public async Task SendNotificationForNewAdsAsync(List<CrawledAdSummary> ads)
         {
             // get template and use it for every ad.
-            var htmlBodySectionTemplate = File.ReadAllText($"./wwwroot/newAdNotification.html");
+            
+            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "wwwroot/newAdNotification.html");
+            var htmlBodySectionTemplate = File.ReadAllText(path);
 
             string htmlBody = string.Empty;
 
