@@ -6,9 +6,9 @@ namespace FindPlaceToRent.WebApi.Controllers
     [ApiController]
     public class NotificationController : ControllerBase
     {
-        private readonly SearcherAndNotifier _notifier;
+        private readonly ISearcherAndNotifier _notifier;
 
-        public NotificationController(SearcherAndNotifier notifier)
+        public NotificationController(ISearcherAndNotifier notifier)
         {
             _notifier = notifier;
         }

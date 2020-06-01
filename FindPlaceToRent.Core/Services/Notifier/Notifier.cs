@@ -1,10 +1,8 @@
 ﻿using FindPlaceToRent.Core.Models.Ad;
 using FindPlaceToRent.Core.Models.Configuration;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace FindPlaceToRent.Core.Services.Notifier
@@ -13,30 +11,31 @@ namespace FindPlaceToRent.Core.Services.Notifier
     {
         private readonly IEmailService _emailService;
         private readonly RealEstateWebSiteAdsListSettings _realEstateWebSiteAdsListSettings;
+        private readonly HtmlTemplateSettings _htmlSettings;
 
-        public Notifier(IEmailService emailService, RealEstateWebSiteAdsListSettings realEstateWebSiteAdsListOptions)
+        public Notifier(IEmailService emailService, RealEstateWebSiteAdsListSettings realEstateWebSiteAdsListSettings, HtmlTemplateSettings htmlSettings)
         {
             _emailService = emailService;
-            _realEstateWebSiteAdsListSettings = realEstateWebSiteAdsListOptions;
+            _realEstateWebSiteAdsListSettings = realEstateWebSiteAdsListSettings;
+            _htmlSettings = htmlSettings;
         }
 
         public async Task SendNotificationForNewAdsAsync(List<CrawledAdSummary> ads)
         {
             // get template and use it for every ad.
-            
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "wwwroot/newAdNotification.html");
-            var htmlBodySectionTemplate = File.ReadAllText(path);
+
+            var htmlBodySectionTemplate = File.ReadAllText(_htmlSettings.FileDirectory);
 
             string htmlBody = string.Empty;
 
             ads.ForEach((e) =>
             {
                 var ad = htmlBodySectionTemplate;
-                
-                ad = ad.Replace("{{url}}", GetAbsoluteAdUrl(_realEstateWebSiteAdsListSettings.AdPageBaseUrl, e.Url))
-                       .Replace("{{titleAreaPrice}}", e.TitleAreaPrice)
-                       .Replace("{{location}}", e.Location)
-                       .Replace("{{characteristics}}", e.Characteristics);
+
+                ad = ad.Replace(_htmlSettings.UrlVarName, GetAbsoluteAdUrl(_realEstateWebSiteAdsListSettings.AdPageBaseUrl, e.Url))
+                       .Replace(_htmlSettings.TitleAreaPriceVarName, e.TitleAreaPrice)
+                       .Replace(_htmlSettings.LocationVarName, e.Location)
+                       .Replace(_htmlSettings.CharacteristicsVarName, e.Characteristics);
 
                 htmlBody += ad;
             });

@@ -20,6 +20,7 @@ namespace FindPlaceToRent.Core
             moduleOptionsBuilder(moduleOptions);
 
             services.AddSingleton(moduleOptions.RealEstateWebSiteAdsListSettings);
+            services.AddSingleton(moduleOptions.HtmlTemplateSettings);
             services.AddSingleton(new ProxyScraperSettings { AccessKey = moduleOptions.ScraperApiApiKey});
 
             services.AddHttpClient<IProxyScraper, ProxyScraper>();
@@ -47,7 +48,7 @@ namespace FindPlaceToRent.Core
                 return new EmailService(client, moduleOptions.SmtpSettings.From, moduleOptions.SmtpSettings.Recipients);
             });
 
-            services.AddScoped<SearcherAndNotifier>();
+            services.AddScoped<ISearcherAndNotifier, SearcherAndNotifier>();
 
             return services;
         }

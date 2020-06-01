@@ -7,5 +7,6 @@
         public string ScraperApiApiKey { get; set; }
         public AzureStorageSettings AzureStorageSettings { get; set; }
         public SmtpSettings SmtpSettings { get; set; }
+        public HtmlTemplateSettings HtmlTemplateSettings { get; set; }
     }
 }

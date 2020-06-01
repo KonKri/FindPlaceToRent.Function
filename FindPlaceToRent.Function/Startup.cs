@@ -1,17 +1,14 @@
-﻿using FindPlaceToRent.Function;
-using FindPlaceToRent.Function.Services.Crawlers;
-using FindPlaceToRent.Function.Services;
+﻿using FindPlaceToRent.Core;
+using FindPlaceToRent.Core.Models.Configuration;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http;
-using System.Net.Mail;
+using Microsoft.Azure.WebJobs.Host.Bindings;
 using Microsoft.Extensions.Configuration;
-using FindPlaceToRent.Function.Models.Configuration;
-using FindPlaceToRent.Function.Services.Notifier;
-using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using System.IO;
 
 // so that azure functions can find startup file.
-[assembly: FunctionsStartup(typeof(Startup))]
+[assembly: FunctionsStartup(typeof(FindPlaceToRent.Function.Startup))]
 
 namespace FindPlaceToRent.Function
 {
@@ -20,42 +17,44 @@ namespace FindPlaceToRent.Function
     /// </summary>
     public class Startup : FunctionsStartup
     {
-        private readonly IConfigurationRoot _config;
-
-        public Startup()
-        {
-            _config = new ConfigurationBuilder()
-                                    .SetBasePath(Environment.CurrentDirectory)
-                                    .AddJsonFile("./secrets.settings.json")
-                                    .Build();
-        }
-
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            // add configuration.
-            builder.Services.Configure<RealEstateWebSiteAdsListSettings>(_config.GetSection("RealEstateWebSiteAdsListSettings"));
-            builder.Services.Configure<SmtpSettings>(_config.GetSection("SmtpSettings"));
+            // building configuration. Implemented that way because of azure issues.
+            var executionContextOptions = builder.Services.BuildServiceProvider()
+                                                          .GetService<IOptions<ExecutionContextOptions>>().Value;
 
-            // add services needed.
-            builder.Services.AddHttpClient();
-            builder.Services.AddScoped<IAdsCrawler, AdsCrawler>();
-            builder.Services.AddSingleton<IProxyScraper>(o => new ProxyScraper(o.GetService<HttpClient>(), _config.GetValue<string>("ScraperApiApiKey")));
-            builder.Services.AddScoped<INotifier, Notifier>();
-            builder.Services.AddScoped<IEmailService, EmailService>(s =>
+            var appDirectory = executionContextOptions.AppDirectory;
+
+            var findPlaceToRentConfig = new ConfigurationBuilder()
+                                   .SetBasePath(appDirectory)
+                                   .AddJsonFile("./secret.settings.json")
+                                   .Build();
+
+            // use depedency injection to startup module.
+            builder.Services.AddFindPlaceToRentModule(options =>
             {
-                var client = new SmtpClient();
-                var settings = new SmtpSettings();
-                _config.Bind("SmtpSettings", settings);
+                // prepare our configuration.
+                var realEstateWebSiteAdsListSettings = new RealEstateWebSiteAdsListSettings();
+                findPlaceToRentConfig.Bind("RealEstateWebSiteAdsListSettings", realEstateWebSiteAdsListSettings);
 
-                client.Host = settings.Server;
-                client.Port = settings.Port;
-                client.EnableSsl = settings.EnableSsl;
-                client.Timeout = 10000;
-                client.DeliveryMethod = SmtpDeliveryMethod.Network;
-                client.UseDefaultCredentials = false;
-                client.Credentials = new System.Net.NetworkCredential(settings.Username, settings.Password);
+                var smtpSettings = new SmtpSettings();
+                findPlaceToRentConfig.Bind("SmtpSettings", smtpSettings);
 
-                return new EmailService(client, settings.From, settings.Recipients);
+                var azureStorageSettings = new AzureStorageSettings();
+                findPlaceToRentConfig.Bind("AzureStorageSettings", azureStorageSettings);
+
+                var htmlTemplateSettings = new HtmlTemplateSettings();
+                findPlaceToRentConfig.Bind("HtmlTemplateSettings", htmlTemplateSettings);
+                htmlTemplateSettings.FileDirectory = Path.Combine(appDirectory, htmlTemplateSettings.FileDirectory); // prepend sys path. maybe change it later.
+
+                // pass configuration into FindPlaceToRent startup file.
+                options.RealEstateWebSiteAdsListSettings = realEstateWebSiteAdsListSettings;
+                options.SmtpSettings = smtpSettings;
+                options.AzureStorageSettings = azureStorageSettings;
+                options.HtmlTemplateSettings = htmlTemplateSettings;
+
+                options.ScraperApiApiKey = findPlaceToRentConfig.GetValue<string>("ScraperApiApiKey");
+                options.ScrapeStackApiKey = findPlaceToRentConfig.GetValue<string>("ScrapeStackApiKey");
             });
         }
     }
