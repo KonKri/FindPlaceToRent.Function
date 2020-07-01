@@ -40,7 +40,7 @@ namespace FindPlaceToRent.Core.Services.Notifier
                 htmlBody += ad;
             });
 
-            await _emailService.SendEmailAsync(subject: "Νέα Αγγελία", body: htmlBody);
+            await _emailService.SendEmailAsync(subject: "Νέες Αγγελίες!", body: htmlBody);
         }
 
         /// <summary>
